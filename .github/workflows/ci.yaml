@@ -1,0 +1,52 @@
+on: [push, pull_request]
+name: CI
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
+    - name: Install dependencies
+      run: |
+        pip install pylint
+    - name: Lint with pylint
+      run: |
+        python -m pylint blender-tools --disable=R,fixme --enable=cyclic-import
+    - name: Refactoring suggestions
+      run: |
+        python -m pylint blender-tools --disable=E,W,C,cyclic-import --enable=fixme --reports=y --exit-zero
+
+  release:
+    name: Release
+    needs: [lint]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Package
+      shell: bash
+      run: |
+        name=embark_blender_tools
+        tag=$(git describe --tags --abbrev=0)
+        release_name="$name-$tag"
+        release_zip="${release_name}.zip"
+        mkdir "$name"
+
+        cp __init__.py "$name/"
+        cp -r exporter icons images operators utils "$name/"
+        cp README.md LICENSE-APACHE LICENSE-MIT "$name/"
+        zip -r "$release_zip" "$name"
+
+        rm -r "$name"
+        echo -n "$(shasum -ba 256 "${release_zip}" | cut -d " " -f 1)" > "${release_zip}.sha256"
+    - name: Publish
+      uses: softprops/action-gh-release@v1
+      with:
+        draft: true
+        files: 'embark_blender_tools*'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

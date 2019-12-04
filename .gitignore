@@ -1,0 +1,6 @@
+.ropeproject
+*.code-workspace
+__pycache__
+*.blend
+*.blend1
+*.pyc
