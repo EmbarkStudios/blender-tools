@@ -15,10 +15,10 @@ jobs:
         pip install pylint
     - name: Lint with pylint
       run: |
-        python -m pylint blender-tools --disable=R,fixme --enable=cyclic-import
+        python -m pylint $(echo $GITHUB_REPOSITORY | cut -d'/' -f2) --disable=R,fixme --enable=cyclic-import
     - name: Refactoring suggestions
       run: |
-        python -m pylint blender-tools --disable=E,W,C,cyclic-import --enable=fixme --reports=y --exit-zero
+        python -m pylint $(echo $GITHUB_REPOSITORY | cut -d'/' -f2) --disable=E,W,C,cyclic-import --enable=fixme --reports=y --exit-zero
 
   release:
     name: Release
