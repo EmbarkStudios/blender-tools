@@ -17,7 +17,7 @@ We welcome Pull Requests - if you would like to contribute, please check out the
 
 ## Installation
 
-1. Download [the latest release of the addon](https://github.com/EmbarkStudios/blender-tools/releases) from Github!
+1. Download [the latest release of the addon](https://github.com/EmbarkStudios/blender-tools/releases/latest) from Github!
 1. Launch Blender and navigate to _Edit -> Preferences_, then choose the _Add-ons_ section:
 
    <img alt="Screenshot of Preferences menu" src="./images/preferences.png"/>
