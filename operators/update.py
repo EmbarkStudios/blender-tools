@@ -4,6 +4,7 @@
 from distutils.version import StrictVersion
 import json
 from os import environ, listdir, path
+from re import search
 from shutil import copyfile
 from socket import timeout
 from tempfile import TemporaryDirectory
@@ -177,8 +178,10 @@ class CheckForUpdates(bpy.types.Operator):
         version = get_current_version()
         download_url = None
         for release in releases:
-            if release.endswith(".zip"):
-                this_version = release[-9:-4]  # Files should always be named embark-blender-tools-X.X.X.zip
+            exp = r"([0-9]+\.[0-9]+\.[0-9]+)"
+            semver_match = search(exp, release)  # File names must contain the version number in the format X.X.X
+            if release.endswith(".zip") and semver_match:
+                this_version = semver_match.group(0)
                 if StrictVersion(this_version) > StrictVersion(version):
                     version = this_version
                     download_url = path.join(release_folder, release)
