@@ -5,7 +5,7 @@ import bpy
 
 
 class ConnectContextual(bpy.types.Operator):
-    """Use a contextually-appropriate action to connect mesh elements."""
+    """Use a contextually-appropriate action to connect mesh elements"""
     bl_idname = "mesh.connect_contextual"
     bl_label = "Connect Contextual"
     bl_options = {'REGISTER', 'UNDO'}

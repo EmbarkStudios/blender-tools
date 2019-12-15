@@ -6,7 +6,7 @@ import bpy
 
 
 class FrameContextual(bpy.types.Operator):  # pylint: disable=too-few-public-methods
-    """Operator that frames the selected objects, or the entire scene if nothing is selected."""
+    """Operator that frames the selected objects, or the entire scene if nothing is selected"""
 
     bl_idname = "view3d.frame_contextual"
     bl_label = "Frame Contextual"

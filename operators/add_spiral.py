@@ -12,7 +12,7 @@ SPIRAL_TYPE = "spiral"
 
 
 class AddSpiralObject(Operator, AddObjectHelper):  # pylint: disable=too-few-public-methods
-    """Create a new Spiral object."""
+    """Create a new Spiral object"""
 
     bl_idname = "curve.add_spiral"
     bl_label = "Spiral"
