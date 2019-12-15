@@ -192,14 +192,16 @@ class ExportCollection(Collection):
         return result
 
     def _pre_export(self, origin_objects):
-        """Move the objects based on the origin."""
+        """Transform the objects based on the origin."""
         for obj in origin_objects:
             self.objects.unlink(obj)  # pylint: disable=no-member
 
         bpy.ops.object.select_all(action='DESELECT')
 
+        inverse_origin_matrix = origin_objects[0].matrix_world.copy()
+        inverse_origin_matrix.invert_safe()
         for obj in self.top_level_objects:
-            obj.location -= origin_objects[0].location  # TODO: Do a full transform based on the origin object?
+            obj.matrix_world = inverse_origin_matrix @ obj.matrix_world
 
         for obj in self.objects:
             obj.select_set(True)
@@ -208,9 +210,10 @@ class ExportCollection(Collection):
                 obj.name = trimmed_name
 
     def _post_export(self, origin_objects):
-        """Reset object locations."""
+        """Reset object transforms."""
+        origin_matrix = origin_objects[0].matrix_world.copy()
         for obj in self.top_level_objects:
-            obj.location += origin_objects[0].location
+            obj.matrix_world = origin_matrix @ obj.matrix_world
 
         for obj in origin_objects:
             self.objects.link(obj)  # pylint: disable=no-member
