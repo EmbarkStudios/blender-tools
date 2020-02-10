@@ -39,3 +39,12 @@ EXPORT_FILE_TYPES = {
     MID_POLY_TYPE: "OBJ",
     HIGH_POLY_TYPE: "OBJ",
 }
+
+# Export type to format mappings (glTF)
+# TODO: find a more modular solution
+EXPORT_FILE_TYPES_GLTF = {
+    STATIC_MESH_TYPE: "GLB",
+    SKELETAL_MESH_TYPE: "GLB",
+    MID_POLY_TYPE: "OBJ",
+    HIGH_POLY_TYPE: "OBJ",
+}

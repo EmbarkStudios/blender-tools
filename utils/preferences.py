@@ -41,6 +41,11 @@ class EmbarkAddonPreferences(AddonPreferences):  # pylint: disable=too-few-publi
         description="If enabled, the addon will check for updates on each session launch (may add loading time)",
         default=True,
     )
+    use_gltf: BoolProperty(
+        name="Use glTF",
+        description="If enabled, the addon will use glTF when exporting meshes",
+        default=False,
+    )
     source_path: StringProperty(
         name="Project source folder",
         description="Location of raw source files for your project, used as a root for scene & import/export paths",
@@ -52,6 +57,7 @@ class EmbarkAddonPreferences(AddonPreferences):  # pylint: disable=too-few-publi
     def draw(self, context):
         """Draws the preferences."""
         self.layout.prop(self, 'auto_update', expand=True)
+        self.layout.prop(self, 'use_gltf', expand=True)
         self.layout.prop(self, 'source_path', expand=True)
 
     def set_items(self, items):

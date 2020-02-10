@@ -6,6 +6,7 @@ import bpy
 from bpy.props import BoolProperty, EnumProperty, StringProperty
 from bpy.types import Operator
 from .. import constants
+from ...utils import get_preferences
 from ..export_collection import get_export_filename
 from ..functions import check_path, create_export_collection
 
@@ -73,6 +74,7 @@ class EmbarkNewExportCollection(Operator):
             name_content.append(bpy.context.active_object.name)
         export_name = "_".join(name_content)
         self.filename = get_export_filename(export_name, self.export_type)
+        self.filter_glob = "*.glb;*.obj" if get_preferences().use_gltf else "*.fbx;*.obj"
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}
 
