@@ -56,7 +56,7 @@ def _validate_path(export_path):
     """Verifies that the export path is under the Embark Addon's project source path."""
     source_path = get_source_path()
     if not source_path:
-        print(f"Warning: Source path was not defined!")
+        print("Warning: Source path was not defined!")
         return RELATIVE_ROOT
 
     if not export_path:
