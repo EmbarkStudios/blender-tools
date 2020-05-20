@@ -11,7 +11,7 @@ from ..utils import get_source_path
 from ..utils.functions import export_fbx, export_obj, remove_numeric_suffix, SceneState, unlink_collection
 
 
-RELATIVE_ROOT = ".\\"
+RELATIVE_ROOT = "./"
 
 
 def get_export_filename(export_name, export_type, include_extension=True):
