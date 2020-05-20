@@ -12,7 +12,7 @@ jobs:
         python-version: 3.6
     - name: Install dependencies
       run: |
-        pip install pylint
+        pip install pylint=2.5.0
     - name: Lint with pylint
       run: |
         python -m pylint $(echo $GITHUB_REPOSITORY | cut -d'/' -f2) --disable=R,fixme --enable=cyclic-import
