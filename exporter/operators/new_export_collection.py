@@ -6,7 +6,6 @@ import bpy
 from bpy.props import BoolProperty, EnumProperty, StringProperty
 from bpy.types import Operator
 from .. import constants
-from ...utils import get_preferences
 from ...utils.functions import get_export_filter_glob
 from ..export_collection import get_export_filename
 from ..functions import check_path, create_export_collection

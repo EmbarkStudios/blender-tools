@@ -5,7 +5,6 @@ from os import environ, path
 from bpy.props import BoolProperty, StringProperty, EnumProperty
 from bpy.types import AddonPreferences
 from . import ADDON_NAME
-from .functions import get_export_extension, get_export_method, get_export_filter_glob
 
 BLENDER_TOOLS_SOURCE_PATH = "BLENDER_TOOLS_SOURCE_PATH"
 

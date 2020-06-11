@@ -7,8 +7,14 @@ import bpy
 from bpy.props import BoolProperty, EnumProperty, StringProperty
 from bpy.types import Collection, Object
 from . import constants
-from ..utils import get_source_path, get_preferences
-from ..utils.functions import get_export_extension, get_export_method, export_gltf, export_fbx, export_obj, remove_numeric_suffix, SceneState, unlink_collection
+from ..utils import get_source_path
+from ..utils.functions import (
+    get_export_extension,
+    get_export_method,
+    remove_numeric_suffix,
+    SceneState,
+    unlink_collection,
+)
 
 
 RELATIVE_ROOT = ".\\"
