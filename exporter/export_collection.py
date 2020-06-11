@@ -176,9 +176,8 @@ class ExportCollection(Collection):
         result = {'CANCELLED'}
         try:
             result = export_method(export_path)
-        except Exception as e:  # pylint: disable=bare-except
+        except:  # pylint: disable=bare-except
             print(f"Error occurred while trying to export '{self.name}'. See System Console for details.")
-            print(e)
 
         self._post_export(origin_objects)
         state.restore()
