@@ -8,7 +8,7 @@ from bpy.props import BoolProperty, EnumProperty, StringProperty
 from bpy.types import Collection, Object
 from . import constants
 from ..utils import get_source_path, get_preferences
-from ..utils.functions import export_gltf, export_fbx, export_obj, remove_numeric_suffix, SceneState, unlink_collection
+from ..utils.functions import get_export_extension, get_export_method, export_gltf, export_fbx, export_obj, remove_numeric_suffix, SceneState, unlink_collection
 
 
 RELATIVE_ROOT = ".\\"
@@ -17,11 +17,8 @@ RELATIVE_ROOT = ".\\"
 def get_export_filename(export_name, export_type, include_extension=True):
     """Gets a preview of the export filename based on `export_name` and `export_type`."""
     export_name = validate_export_name(export_name)
-    file_types = constants.EXPORT_FILE_TYPES_GLTF if get_preferences().use_gltf else constants.EXPORT_FILE_TYPES
-    extension = f".{file_types[export_type].lower()}" if include_extension else ""
-    if export_type in [constants.MID_POLY_TYPE, constants.HIGH_POLY_TYPE]:
-        return f"{export_name}_{export_type}{extension}"
-    return f"{export_type}_{export_name}{extension}"
+    extension = get_export_extension(export_type).lower() if include_extension else ""
+    return f"{export_type}_{export_name}.{extension}"
 
 
 def validate_export_name(export_name):
@@ -174,15 +171,14 @@ class ExportCollection(Collection):
             print(f"Created new folder: {target_folder}")
 
         # Export the contents of the Collection as appropriate
-        export_method = export_gltf if get_preferences().use_gltf else export_fbx
-        if self.export_type in [constants.MID_POLY_TYPE, constants.HIGH_POLY_TYPE]:
-            export_method = export_obj
+        export_method = get_export_method(self.export_type)
 
         result = {'CANCELLED'}
         try:
             result = export_method(export_path)
-        except:  # pylint: disable=bare-except
+        except Exception as e:  # pylint: disable=bare-except
             print(f"Error occurred while trying to export '{self.name}'. See System Console for details.")
+            print(e)
 
         self._post_export(origin_objects)
         state.restore()

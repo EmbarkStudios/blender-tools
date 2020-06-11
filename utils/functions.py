@@ -5,6 +5,8 @@ from math import sin, cos, pi
 from re import split
 import bpy
 from mathutils import Vector
+from ..exporter import constants
+from . import get_preferences
 
 
 TWO_PI = pi * 2
@@ -32,13 +34,47 @@ class SceneState():  # pylint: disable=too-few-public-methods
             bpy.context.view_layer.objects.active = self.edit_object
 
 
-def export_gltf(filepath):
+def get_export_extension(export_type):
+    """Returns a string with the file extension for the provided export type."""
+    pref_extension = get_preferences().export_file_type
+    extensions = {
+        constants.STATIC_MESH_TYPE: pref_extension,
+        constants.SKELETAL_MESH_TYPE: pref_extension,
+        constants.MID_POLY_TYPE: 'OBJ',
+        constants.HIGH_POLY_TYPE: 'OBJ',
+    }
+    return extensions.get(export_type, pref_extension)
+
+
+def get_export_method(export_type):
+    """Returns a function for exporting the provided export type."""
+    extension = get_export_extension(export_type)
+    methods = {
+        'FBX': export_fbx,
+        'GLTF': lambda filepath: export_gltf(filepath, 'GLTF_SEPARATE'),
+        'GLB': lambda filepath: export_gltf(filepath, 'GLB'),
+        'OBJ': export_obj,
+    }
+    return methods.get(extension, export_fbx)
+
+
+def get_export_filter_glob():
+    """Returns a function for exporting the provided export type."""
+    pref_extension = get_preferences().export_file_type
+    globs = {
+        'FBX': '*.fbx;*.obj',
+        'GLTF': '*.gltf;*.obj',
+        'GLB': '*.glb;*.obj',
+    }
+    return globs.get(pref_extension, '*')
+
+
+def export_gltf(filepath, export_format):
     """Export a glTF with standardized settings."""
     return bpy.ops.export_scene.gltf(
-        export_format='GLB',
-        ui_tab='GENERAL',
+        export_format=export_format,
         export_copyright="",
-        export_image_format='PNG',
+        export_image_format='AUTO',
         export_texcoords=True,
         export_normals=True,
         export_draco_mesh_compression_enable=False,

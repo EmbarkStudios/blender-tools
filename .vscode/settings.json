@@ -9,5 +9,6 @@
     "python.formatting.autopep8Args": [
         "--max-line-length=120"
     ],
-    "autoDocstring.docstringFormat": "sphinx"
+    "autoDocstring.docstringFormat": "sphinx",
+    "python.pythonPath": "d:\\Programs\\Scoop\\apps\\blender\\current\\2.83\\python\\bin\\python.exe"
 }

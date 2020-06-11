@@ -2,9 +2,10 @@
 
 
 from os import environ, path
-from bpy.props import BoolProperty, StringProperty
+from bpy.props import BoolProperty, StringProperty, EnumProperty
 from bpy.types import AddonPreferences
 from . import ADDON_NAME
+from .functions import get_export_extension, get_export_method, get_export_filter_glob
 
 BLENDER_TOOLS_SOURCE_PATH = "BLENDER_TOOLS_SOURCE_PATH"
 
@@ -41,10 +42,15 @@ class EmbarkAddonPreferences(AddonPreferences):  # pylint: disable=too-few-publi
         description="If enabled, the addon will check for updates on each session launch (may add loading time)",
         default=True,
     )
-    use_gltf: BoolProperty(
-        name="Use glTF",
-        description="If enabled, the addon will use glTF when exporting meshes",
-        default=False,
+    export_file_type: EnumProperty(
+        items=[
+            ('FBX', 'FBX', ''),
+            ('GLTF', 'GLTF', 'Separated GLTF'),
+            ('GLB', 'GLB', ''),
+        ],
+        name="Export File Type",
+        description="Determines which file type will be used when exporting static and skeletal meshes.",
+        default=None,
     )
     source_path: StringProperty(
         name="Project source folder",
@@ -57,7 +63,7 @@ class EmbarkAddonPreferences(AddonPreferences):  # pylint: disable=too-few-publi
     def draw(self, context):
         """Draws the preferences."""
         self.layout.prop(self, 'auto_update', expand=True)
-        self.layout.prop(self, 'use_gltf', expand=True)
+        self.layout.prop(self, 'export_file_type')
         self.layout.prop(self, 'source_path', expand=True)
 
     def set_items(self, items):
