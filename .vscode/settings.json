@@ -6,9 +6,6 @@
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
     "python.formatting.provider": "autopep8",
-    "python.formatting.autopep8Args": [
-        "--max-line-length=120"
-    ],
-    "autoDocstring.docstringFormat": "sphinx",
-    "python.pythonPath": "d:\\Programs\\Scoop\\apps\\blender\\current\\2.83\\python\\bin\\python.exe"
+    "python.formatting.autopep8Args": ["--max-line-length=120"],
+    "autoDocstring.docstringFormat": "sphinx"
 }
