@@ -6,6 +6,7 @@ import bpy
 from bpy.props import BoolProperty, EnumProperty, StringProperty
 from bpy.types import Operator
 from .. import constants
+from ...utils.functions import get_export_extension, get_export_filter_glob
 from ..export_collection import get_export_filename
 from ..functions import check_path, create_export_collection
 
@@ -21,7 +22,7 @@ class EmbarkNewExportCollection(Operator):
     def _export_type_changed(self, context):
         """Updates the file browser type filter and file extension when the Export Type is changed."""
         # BUG: Dynamically changing the file browser properties appears to not be currently supported in Blender :(
-        self.filter_glob = f"*.{constants.EXPORT_FILE_TYPES[self.export_type].lower()}"
+        self.filter_glob = get_export_filter_glob()
         self.filename = get_export_filename(self.export_name, self.export_type)
 
     directory: StringProperty()
@@ -38,7 +39,7 @@ class EmbarkNewExportCollection(Operator):
     def draw(self, context):
         """Draws the Operator properties."""
         self.layout.prop(self, constants.PROP_EXPORT_TYPE, expand=True)
-        self.layout.label(text=f"Exports in {constants.EXPORT_FILE_TYPES[self.export_type]} format")
+        self.layout.label(text=f"Exports in {get_export_extension(self.export_type)} format")
         self.layout.prop(self, "export_immediately")
 
     def execute(self, context):
@@ -73,6 +74,7 @@ class EmbarkNewExportCollection(Operator):
             name_content.append(bpy.context.active_object.name)
         export_name = "_".join(name_content)
         self.filename = get_export_filename(export_name, self.export_type)
+        self.filter_glob = get_export_filter_glob()
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}
 

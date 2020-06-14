@@ -5,6 +5,8 @@ from math import sin, cos, pi
 from re import split
 import bpy
 from mathutils import Vector
+from ..exporter import constants
+from . import get_preferences
 
 
 TWO_PI = pi * 2
@@ -30,6 +32,81 @@ class SceneState():  # pylint: disable=too-few-public-methods
         if self.edit_object:
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.context.view_layer.objects.active = self.edit_object
+
+
+def get_export_extension(export_type):
+    """Returns a string with the file extension for the provided export type."""
+    pref_extension = get_preferences().export_file_type
+    extensions = {
+        constants.STATIC_MESH_TYPE: pref_extension,
+        constants.SKELETAL_MESH_TYPE: pref_extension,
+        constants.MID_POLY_TYPE: 'OBJ',
+        constants.HIGH_POLY_TYPE: 'OBJ',
+    }
+    return extensions.get(export_type, pref_extension)
+
+
+def get_export_method(export_type):
+    """Returns a function for exporting the provided export type."""
+    extension = get_export_extension(export_type)
+    methods = {
+        'FBX': export_fbx,
+        'GLTF': lambda filepath: export_gltf(filepath, 'GLTF_SEPARATE'),
+        'GLB': lambda filepath: export_gltf(filepath, 'GLB'),
+        'OBJ': export_obj,
+    }
+    return methods.get(extension, export_fbx)
+
+
+def get_export_filter_glob():
+    """Returns a function for exporting the provided export type."""
+    pref_extension = get_preferences().export_file_type
+    globs = {
+        'FBX': '*.fbx;*.obj',
+        'GLTF': '*.gltf;*.obj',
+        'GLB': '*.glb;*.obj',
+    }
+    return globs.get(pref_extension, '*')
+
+
+def export_gltf(filepath, export_format):
+    """Export a glTF with standardized settings."""
+    return bpy.ops.export_scene.gltf(
+        export_format=export_format,
+        export_copyright="",
+        export_texcoords=True,
+        export_normals=True,
+        export_draco_mesh_compression_enable=False,
+        export_draco_mesh_compression_level=6,
+        export_draco_position_quantization=14,
+        export_draco_normal_quantization=10,
+        export_draco_texcoord_quantization=12,
+        export_tangents=False,
+        export_materials=True,
+        export_colors=True,
+        export_cameras=False,
+        export_selected=True,
+        export_extras=False,
+        export_yup=True,
+        export_apply=True,
+        export_animations=True,
+        export_frame_range=True,
+        export_frame_step=1,
+        export_force_sampling=True,
+        export_nla_strips=True,
+        export_current_frame=False,
+        export_skins=True,
+        export_all_influences=False,
+        export_morph=True,
+        export_morph_normal=True,
+        export_morph_tangent=False,
+        export_lights=False,
+        export_displacement=False,
+        will_save_settings=False,
+        filepath=filepath,
+        check_existing=False,
+        filter_glob="*.glb;*.gltf",
+    )
 
 
 def export_fbx(filepath):

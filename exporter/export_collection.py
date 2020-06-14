@@ -8,7 +8,13 @@ from bpy.props import BoolProperty, EnumProperty, StringProperty
 from bpy.types import Collection, Object
 from . import constants
 from ..utils import get_source_path
-from ..utils.functions import export_fbx, export_obj, remove_numeric_suffix, SceneState, unlink_collection
+from ..utils.functions import (
+    get_export_extension,
+    get_export_method,
+    remove_numeric_suffix,
+    SceneState,
+    unlink_collection,
+)
 
 
 RELATIVE_ROOT = "./"
@@ -17,9 +23,7 @@ RELATIVE_ROOT = "./"
 def get_export_filename(export_name, export_type, include_extension=True):
     """Gets a preview of the export filename based on `export_name` and `export_type`."""
     export_name = validate_export_name(export_name)
-    extension = f".{constants.EXPORT_FILE_TYPES[export_type].lower()}" if include_extension else ""
-    if export_type in [constants.MID_POLY_TYPE, constants.HIGH_POLY_TYPE]:
-        return f"{export_name}_{export_type}{extension}"
+    extension = ("." + get_export_extension(export_type).lower()) if include_extension else ""
     return f"{export_type}_{export_name}{extension}"
 
 
@@ -43,7 +47,8 @@ def validate_export_name(export_name):
         new_tokens.append(path.splitext(path.basename(bpy.data.filepath))[0])
 
     # Strip type prefix if someone typed it in manually
-    if new_tokens[0].upper() in constants.EXPORT_FILE_TYPES.keys():
+    prefixes = [export_type[0] for export_type in constants.EXPORT_TYPES]
+    if new_tokens[0].upper() in prefixes:
         if len(new_tokens) == 1:
             export_name = path.splitext(path.basename(bpy.data.filepath))[0]
         else:
@@ -173,9 +178,7 @@ class ExportCollection(Collection):
             print(f"Created new folder: {target_folder}")
 
         # Export the contents of the Collection as appropriate
-        export_method = export_fbx
-        if self.export_type in [constants.MID_POLY_TYPE, constants.HIGH_POLY_TYPE]:
-            export_method = export_obj
+        export_method = get_export_method(self.export_type)
 
         result = {'CANCELLED'}
         try:

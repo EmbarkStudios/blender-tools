@@ -5,7 +5,7 @@ import bpy
 from bpy.props import BoolProperty, EnumProperty, StringProperty
 from bpy.types import Operator
 from .. import constants
-from ..export_collection import get_export_filename
+from ..export_collection import get_export_extension, get_export_filename
 from ..functions import check_path, create_export_collection
 from ...utils.functions import remove_numeric_suffix
 
@@ -80,7 +80,7 @@ class EmbarkNewExportCollectionsPerObject(Operator):
     def draw(self, context):
         """Draws the Operator properties."""
         self.layout.prop(self, constants.PROP_EXPORT_TYPE, expand=True)
-        self.layout.label(text=f"Exports in {constants.EXPORT_FILE_TYPES[self.export_type]} format")
+        self.layout.label(text=f"Exports in {get_export_extension(self.export_type)} format")
         self.layout.prop(self, "use_object_origin")
         self.layout.prop(self, "export_immediately")
 
