@@ -74,7 +74,6 @@ def export_gltf(filepath, export_format):
     return bpy.ops.export_scene.gltf(
         export_format=export_format,
         export_copyright="",
-        export_image_format='AUTO',
         export_texcoords=True,
         export_normals=True,
         export_draco_mesh_compression_enable=False,
