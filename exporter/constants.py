@@ -30,12 +30,3 @@ EXPORT_TYPES = [
     (MID_POLY_TYPE, "Mid Poly", "Mid Poly", 'MESH', 3),
     (HIGH_POLY_TYPE, "High Poly", "High Poly", 'MESH', 4),
 ]
-
-
-# Export type to format mappings
-EXPORT_FILE_TYPES = {
-    STATIC_MESH_TYPE: "FBX",
-    SKELETAL_MESH_TYPE: "FBX",
-    MID_POLY_TYPE: "OBJ",
-    HIGH_POLY_TYPE: "OBJ",
-}

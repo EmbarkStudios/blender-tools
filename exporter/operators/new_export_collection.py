@@ -22,7 +22,7 @@ class EmbarkNewExportCollection(Operator):
     def _export_type_changed(self, context):
         """Updates the file browser type filter and file extension when the Export Type is changed."""
         # BUG: Dynamically changing the file browser properties appears to not be currently supported in Blender :(
-        self.filter_glob = f"*.{constants.EXPORT_FILE_TYPES[self.export_type].lower()}"
+        self.filter_glob = get_export_filter_glob()
         self.filename = get_export_filename(self.export_name, self.export_type)
 
     directory: StringProperty()

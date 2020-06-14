@@ -47,7 +47,8 @@ def validate_export_name(export_name):
         new_tokens.append(path.splitext(path.basename(bpy.data.filepath))[0])
 
     # Strip type prefix if someone typed it in manually
-    if new_tokens[0].upper() in constants.EXPORT_FILE_TYPES.keys():
+    prefixes = [export_type[0] for export_type in constants.EXPORT_TYPES]
+    if new_tokens[0].upper() in prefixes:
         if len(new_tokens) == 1:
             export_name = path.splitext(path.basename(bpy.data.filepath))[0]
         else:
