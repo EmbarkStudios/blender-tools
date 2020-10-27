@@ -129,8 +129,6 @@ Adds a parametric spiral curve object to the scene.
 
 ### Connect Contextual
 
-[![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4-ff69b4.svg)](../CODE_OF_CONDUCT.md)
-
 Mesh editing, connects verts/edges/faces depending on selection.
 
 ### Frame Contextual
@@ -140,6 +138,8 @@ Accessed from the 3D viewport's _View -> Frame Contextual_ menu item.
 Frames the selection in the 3D viewport, or frames the whole scene if nothing is selected.
 
 ## Contributing
+
+[![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4-ff69b4.svg)](../CODE_OF_CONDUCT.md)
 
 We welcome community contributions to this project.
 
