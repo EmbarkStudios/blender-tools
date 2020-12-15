@@ -13,7 +13,7 @@ bl_info = {
     "name": "Embark Addon",
     "description": "A suite of tools geared towards game development, created by Embark Studios",
     "author": "Embark Studios",
-    "version": (1, 7, 0),
+    "version": (1, 7, 1),
     "blender": (2, 81, 0),
     "location": "Embark menu",
     "wiki_url": "https://github.com/EmbarkStudios/blender-tools/",
