@@ -223,7 +223,8 @@ class CheckForUpdates(bpy.types.Operator):
 @persistent
 def _auto_update_handler(context):
     """Check for updates on first scene load."""
-    bpy.ops.screen.embark_check_for_updates()
+    if get_preferences().auto_update is True:
+        bpy.ops.screen.embark_check_for_updates()
     bpy.app.handlers.load_post.remove(_auto_update_handler)  # Job done, so remove itself
 
 
@@ -242,9 +243,8 @@ def register():
     for cls in __classes__:
         bpy.utils.register_class(cls)
 
-    # Add a scene load handler for the first time auto-update check, if needed
-    if get_preferences().auto_update is True:
-        bpy.app.handlers.load_post.append(_auto_update_handler)
+    # Add a scene load handler for the first time auto-update check
+    bpy.app.handlers.load_post.append(_auto_update_handler)
 
 
 def unregister():
