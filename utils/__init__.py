@@ -3,12 +3,15 @@
 
 from importlib import reload
 from inspect import isclass
-from os.path import normpath
+from os.path import basename, dirname, normpath
 import sys
 import bpy
 
 
-ADDON_NAME = "embark_blender_tools"
+# This is the addon's directory name, by default "embark_blender_tools", but anyone can change the folder name...
+# We use dirname() twice to go up two levels in the file system and then basename to get the folder name.
+# Thanks to https://github.com/LuxCoreRender/BlendLuxCore/ for the example of solving the same issue!
+ADDON_NAME = basename(dirname(dirname(__file__)))
 
 
 def get_current_version():
