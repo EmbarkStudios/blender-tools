@@ -41,6 +41,11 @@ class EmbarkNewExportCollectionsPerObject(Operator):
         description="Export this collection immediately",
         default=True,
     )
+    apply_transform: BoolProperty(
+        name='Apply Transform',
+        description='Applies transform to work with UE4s "Transform Vertex to Absolute" import setting.',
+        default=False,
+    )
     export_type: EnumProperty(name="Type", items=constants.EXPORT_TYPES, default=constants.STATIC_MESH_TYPE)
     filter_glob: StringProperty(default="*.fbx;*.obj")
     use_scene_name: BoolProperty(
@@ -84,6 +89,9 @@ class EmbarkNewExportCollectionsPerObject(Operator):
         self.layout.prop(self, "use_object_origin")
         self.layout.prop(self, "export_immediately")
 
+        if get_export_extension(self.export_type) == 'FBX':
+            self.layout.prop(self, 'apply_transform')
+
         self.layout.label(text="Name Options:")
         self.layout.prop(self, "use_scene_name")
         self.layout.prop(self, "use_object_name")
@@ -119,7 +127,8 @@ class EmbarkNewExportCollectionsPerObject(Operator):
                 continue
             export_name = self._get_export_name(obj)
             self._name_previews.append(export_name)
-            collection = create_export_collection(export_name, self.directory, self.export_type, [obj])
+            collection = create_export_collection(export_name, self.directory,
+                                                  self.export_type, self.apply_transform, [obj])
             self.report({'INFO'}, f"Successfully created '{collection.name}'")
             collections.append(collection)
 

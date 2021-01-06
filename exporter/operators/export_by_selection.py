@@ -1,8 +1,8 @@
 """Operator to export Export Collections based on the object selection."""
 
-
 from bpy.types import Operator
 from ..functions import get_export_collections, export_collections
+from ...utils.path_manager import is_source_path_valid
 
 
 class EmbarkExportBySelection(Operator):
@@ -14,6 +14,9 @@ class EmbarkExportBySelection(Operator):
 
     def execute(self, context):
         """Export any Export Collections containing the current object selection."""
+        if not is_source_path_valid(show_warning=True):
+            return {'CANCELLED'}
+
         total, succeeded = export_collections(only_selected=True)
         count = f"{succeeded}/{total}"
         if succeeded == total:

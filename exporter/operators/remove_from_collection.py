@@ -23,6 +23,7 @@ class EmbarkRemoveFromCollection(Operator):  # pylint: disable=too-few-public-me
             self.report({'ERROR'}, f"Failed to find an Export Collection named '{self.collection_name}'")
             return {'CANCELLED'}
 
+        collection.update_collection_hierarchy()
         num_removed = collection.remove_objects(context.selected_objects)
 
         self.report({'INFO'}, f"Removed {num_removed} object(s) from Export Collection '{self.collection_name}'")

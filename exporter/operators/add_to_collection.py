@@ -23,6 +23,7 @@ class EmbarkAddToCollection(Operator):  # pylint: disable=too-few-public-methods
             self.report({'ERROR'}, f"Failed to find an Export Collection named '{self.collection_name}'")
             return {'CANCELLED'}
 
+        collection.update_collection_hierarchy()
         num_added = collection.add_objects(context.selected_objects)
 
         self.report({'INFO'}, f"Added {num_added} object(s) to Export Collection '{self.collection_name}'")

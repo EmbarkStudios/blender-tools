@@ -23,6 +23,7 @@ class EmbarkSelectExportCollection(Operator):  # pylint: disable=too-few-public-
             self.report({'ERROR'}, f"Failed to find an Export Collection named '{self.collection_name}'")
             return {'CANCELLED'}
 
+        collection.update_collection_hierarchy()
         collection.select()
 
         self.report({'INFO'}, f"Selected contents of Export Collection '{self.collection_name}'")

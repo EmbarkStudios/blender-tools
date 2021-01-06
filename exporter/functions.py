@@ -5,21 +5,19 @@ from os import path
 import bpy
 from . import constants
 from .export_collection import ExportCollection
-from ..utils import get_source_path
-from ..utils.functions import SceneState
+from ..utils.functions import SceneState, create_sub_collection, create_space_name, get_all_col_names
+from ..utils.path_manager import get_source_path, is_source_path_valid, validate_path
 
 
 def check_path(operator):
-    """Verifies that the scene path is under the Embark Addon's project source path."""
-    source_path = get_source_path()
-    if not source_path:
-        operator.report({'ERROR'}, "Please set up the 'Project source folder' in the Embark Addon preferences!")
+    """Verifies that the scene path is under the Embark Addon's Project source folder."""
+    if not is_source_path_valid():
+        operator.report({'WARNING'}, "Please set up the 'Project source folder' in the Embark Addon preferences!")
         return False
 
-    source_path = path.normpath(source_path)
     scene_path = bpy.path.abspath("//")
-    if not scene_path or not scene_path.lower().startswith(source_path.lower()):
-        operator.report({'ERROR'}, f"Please save your .blend file under {source_path}")
+    if not validate_path(scene_path):
+        operator.report({'ERROR'}, f"Please save your .blend file under {get_source_path()}")
         return False
 
     operator.directory = scene_path
@@ -27,7 +25,7 @@ def check_path(operator):
     return True
 
 
-def create_export_collection(export_name, export_path, export_type, objects):
+def create_export_collection(export_name, export_path, export_type, apply_transform, objects):
     """Create a new Export Collection.
 
     :param export_name: Name of the Export Collection
@@ -35,6 +33,8 @@ def create_export_collection(export_name, export_path, export_type, objects):
     :return: The resulting Export Collection object
     """
     state = SceneState()
+    bpy.ops.object.mode_set(mode='OBJECT')
+    source_path = get_source_path()
 
     if constants.EXPORT_COLLECTION_NAME in bpy.context.scene.collection.children:
         exp_col = bpy.data.collections[constants.EXPORT_COLLECTION_NAME]
@@ -42,18 +42,25 @@ def create_export_collection(export_name, export_path, export_type, objects):
         exp_col = bpy.data.collections.new(constants.EXPORT_COLLECTION_NAME)
         bpy.context.scene.collection.children.link(exp_col)
 
+    # Add Export Collection
     new_col = bpy.data.collections.new("TEMP_EXPORT_COLLECTION")
     exp_col.children.link(new_col)
-
-    for obj in objects:
-        new_col.objects.link(obj)
-
-    source_path = get_source_path()
 
     collection = ExportCollection(new_col)
     collection.export_name = export_name
     collection.export_path = path.relpath(export_path, source_path)
     collection.export_type = export_type
+    collection.apply_transform = apply_transform
+
+    collection['Mesh'] = create_sub_collection(collection, create_space_name('Mesh', get_all_col_names()))
+    collection['Mesh']['LODS'] = {}
+    collection['Collision'] = create_sub_collection(collection, create_space_name('Collision', get_all_col_names()))
+    collection['Work'] = create_sub_collection(collection, create_space_name('Work', get_all_col_names()))
+
+    for _ in range(0, 3):
+        collection.add_lod_level()
+
+    collection.add_objects(objects)
 
     bpy.ops.object.empty_add(type='PLAIN_AXES', location=objects[0].location)
     export_origin = bpy.context.active_object
@@ -62,6 +69,9 @@ def create_export_collection(export_name, export_path, export_type, objects):
 
     # Remove this Empty from the active layer, it will be linked to this by default
     bpy.context.view_layer.active_layer_collection.collection.objects.unlink(export_origin)
+
+    collection['Origin'] = export_origin
+    collection.update_instance_offset()
 
     collection.rename()
 
@@ -81,14 +91,7 @@ def get_export_collections(only_selected=False):
         return []
 
     if only_selected:
-        sel_objs = bpy.context.selected_objects
-        sel_collections = []
-        for obj in sel_objs:
-            collections_with_obj = [coll for coll in collections[0].children if obj.name in coll.objects]
-            for collection in collections_with_obj:
-                if collection not in sel_collections:
-                    sel_collections.append(ExportCollection(collection))
-        return sel_collections
+        return [ExportCollection(coll) for coll in collections[0].children if ExportCollection(coll).is_selected]
 
     return [ExportCollection(collection) for collection in collections[0].children]
 
@@ -113,6 +116,19 @@ def export_collections(only_selected=False):
     collections = get_export_collections(only_selected=only_selected)
     num_exported = 0
     for collection in collections:
+        collection.update_collection_hierarchy()
         if collection.export() == {'FINISHED'}:
             num_exported += 1
     return len(collections), num_exported
+
+
+def get_max_lod_count():
+    """ Returns the maximum number of LODS found in an ExportCollection. """
+    collections = get_export_collections()
+    max_lod_num = 0
+    for col in collections:
+        mesh_col = col.get("Mesh")
+        if mesh_col:
+            num_lods = len(mesh_col["LODS"])
+            max_lod_num = num_lods if num_lods > max_lod_num else max_lod_num
+    return max_lod_num

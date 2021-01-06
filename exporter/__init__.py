@@ -4,10 +4,10 @@
 import bpy
 from . import operators
 from .constants import GROUPS_ICON
-from .exporter_panel import EmbarkExporterPanel
+from . import exporter_panel
 
 
 REGISTER_CLASSES = (
     operators,
-    EmbarkExporterPanel
+    exporter_panel,
 )

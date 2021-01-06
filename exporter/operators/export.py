@@ -1,9 +1,9 @@
 """Operator to export an Export Collection by name."""
 
-
 from bpy.props import StringProperty
 from bpy.types import Operator
 from ..functions import get_export_collection_by_name
+from ...utils.path_manager import is_source_path_valid
 
 
 class EmbarkExportCollection(Operator):  # pylint: disable=too-few-public-methods
@@ -22,9 +22,14 @@ class EmbarkExportCollection(Operator):  # pylint: disable=too-few-public-method
             self.report({'ERROR'}, f"Failed to find an Export Collection named '{self.collection_name}'")
             return {'CANCELLED'}
 
+        if not is_source_path_valid(show_warning=True):
+            return {'CANCELLED'}
+
+        collection.update_collection_hierarchy()
         result = collection.export()
         if result == {'FINISHED'}:
             self.report({'INFO'}, f"Successfully exported '{self.collection_name}'!")
         else:
             self.report({'ERROR'}, f"Failed to export '{self.collection_name}'! See System Console for details.")
+
         return result

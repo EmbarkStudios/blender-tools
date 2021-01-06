@@ -3,6 +3,7 @@
 
 from math import sin, cos, pi
 from re import split
+from fnmatch import fnmatch
 import bpy
 from mathutils import Vector
 from ..exporter import constants
@@ -10,28 +11,60 @@ from . import get_preferences
 
 
 TWO_PI = pi * 2
+SOCKET_PREFIX = "SOCKET_"
 
 
 class SceneState():  # pylint: disable=too-few-public-methods
-    """Class for storing and restoring scene selection state."""
+    """Class for storing and restoring scene selection state and objects/collection properties."""
 
-    def __init__(self):
+    def __init__(self, objects=None, collections=None):
         """Store the main context's active object, edit object and selection."""
         self.active_object = bpy.context.view_layer.objects.active
         self.edit_object = bpy.context.edit_object
-        if self.edit_object:
-            bpy.ops.object.mode_set(mode='OBJECT')
         self.selected_objects = bpy.context.selected_objects
+        self.edit_select_mode = None
+        if self.edit_object:
+            self.edit_select_mode = tuple(bpy.context.tool_settings.mesh_select_mode)
+
+        self.objects = []
+        if objects:
+            for obj in objects:
+                obj_entry = {"Object": obj,
+                             "Selected": obj.select_get(),
+                             "Hidden": obj.hide_get()
+                             }
+                self.objects.append(obj_entry)
+
+        self.collections = []
+        if collections:
+            for col in collections:
+                col_entry = {"Collection": col,
+                             "Hidden": col.hide_viewport
+                             }
+                self.collections.append(col_entry)
 
     def restore(self):
         """Reset the main context's active, edit and selected objects to those stored in this `SceneState` object."""
+        if bpy.context.mode != "OBJECT":
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+        if self.collections:
+            for col_entry in self.collections:
+                col = col_entry["Collection"]
+                col.hide_viewport = col_entry["Hidden"]
+
         bpy.ops.object.select_all(action='DESELECT')
-        for obj in self.selected_objects:
-            obj.select_set(True)
+        if self.objects:
+            for obj_entry in self.objects:
+                obj = obj_entry["Object"]
+                obj.hide_set(obj_entry["Hidden"])
+                obj.select_set(obj_entry["Selected"])
         bpy.context.view_layer.objects.active = self.active_object
+
         if self.edit_object:
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.context.view_layer.objects.active = self.edit_object
+            bpy.context.tool_settings.mesh_select_mode = self.edit_select_mode
 
 
 def get_export_extension(export_type):
@@ -129,6 +162,27 @@ def export_fbx(filepath):
     )
 
 
+def export_fbx_apply_transform(filepath):
+    """Export an FBX to work with UE4's Transform Vertex to Absolute import setting."""
+    return bpy.ops.export_scene.fbx(
+        filepath=filepath,
+        check_existing=False,
+        use_selection=True,  # TODO: Consider use_active_collection, so we don't have to mess with selection?
+        global_scale=1.0,
+        apply_unit_scale=True,
+        apply_scale_options='FBX_SCALE_NONE',
+        bake_space_transform=True,
+        object_types={'EMPTY', 'MESH', 'OTHER'},
+        use_mesh_modifiers=True,
+        use_armature_deform_only=True,
+        mesh_smooth_type='FACE',
+        add_leaf_bones=False,
+        embed_textures=False,
+        axis_forward='Y',
+        axis_up='Z',
+    )
+
+
 def export_obj(filepath):
     """Export an OBJ with standardized settings."""
     return bpy.ops.export_scene.obj(
@@ -215,3 +269,97 @@ def make_spline(obj, pos_list, spline_type, del_old=False):
     polyline.points.add(len(pos_list) - 1)
     for counter, pos in enumerate(pos_list):
         polyline.points[counter].co = (pos[0], pos[1], pos[2], 1)
+
+
+def get_all_children(obj, children):
+    ''' Recursively gets all children under a object. '''
+    if obj.children:
+        for child in obj.children:
+            if child not in children:
+                children.append(child)
+                if child.children:
+                    children.extend(get_all_children(child, children))
+    return children
+
+
+def message_box(message='', title='', icon='INFO'):
+    ''' Creates a message box '''
+
+    def draw(self, context):
+        self.layout.label(text=message)
+
+    bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
+
+
+def create_space_name(name, iterable):
+    ''' Checks for a name in a iterable, if that string is found it
+    adds a space to the end of that name and tries again.
+
+    :param name: name you want to check.
+    :return: name with extra spaces at end.
+    '''
+
+    if name in [n for n in iterable]:
+        name += ' '
+        name = create_space_name(name, iterable)
+    return name
+
+
+def create_sub_collection(collection, name):
+    ''' Creates a sub collection to a existing collection.
+
+    :param collection: The collection to create a sub collection for.
+    :return: The sub collection created
+    '''
+    sub_col = bpy.data.collections.new(name)
+    collection.children.link(sub_col)
+    return sub_col
+
+
+def get_all_col_names():
+    ''' Returns a list of all collection names. '''
+    return [c.name for c in bpy.data.collections]
+
+
+def get_global_work_collection():
+    ''' Returns the "Work" collection if it exists, otherwise it is created and returned.'''
+    for coll in bpy.context.scene.collection.children:
+        if fnmatch(coll.name, 'Work Global*'):
+            return coll
+
+    # Check for old naming convention
+    for coll in bpy.context.scene.collection.children:
+        if fnmatch(coll.name, 'Work*'):
+            return coll
+
+    new_global_work_col = bpy.data.collections.new(create_space_name('Work Global', get_all_col_names()))
+    bpy.context.scene.collection.children.link(new_global_work_col)
+    return new_global_work_col
+
+
+def show_objects(show: bool, objects):
+    ''' Toggles the visibility of objects. '''
+    if not hasattr(objects, '__iter__'):
+        objects = [objects]
+
+    for obj in objects:
+        obj.hide_set(not show)
+
+
+def show_collections(show: bool, collections):
+    ''' Toggles the visibility of collections. '''
+    if not hasattr(collections, '__iter__'):
+        collections = [collections]
+
+    for col in collections:
+        col.hide_viewport = not show
+
+
+def is_socket(obj):
+    """Returns true if the given object is a Socket, otherwise false."""
+    return obj.type == 'EMPTY' and obj.name.startswith(SOCKET_PREFIX)
+
+
+def get_scene_scale_modifier():
+    """ Returns a scaling factor to match Unreal units based on the Blender scene units. """
+    return bpy.context.scene.unit_settings.scale_length * 100.0

@@ -1,8 +1,8 @@
 """Operator to export all Export Collections in the scene."""
 
-
 from bpy.types import Operator
 from ..functions import get_export_collections, export_collections
+from ...utils.path_manager import is_source_path_valid
 
 
 class EmbarkExportAll(Operator):
@@ -14,6 +14,9 @@ class EmbarkExportAll(Operator):
 
     def execute(self, context):
         """Exports all Export Collections in the scene."""
+        if not is_source_path_valid(show_warning=True):
+            return {'CANCELLED'}
+
         total, succeeded = export_collections()
         count = f"{succeeded}/{total}"
         if succeeded == total:

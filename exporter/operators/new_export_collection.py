@@ -31,6 +31,11 @@ class EmbarkNewExportCollection(Operator):
         description="Export this collection immediately",
         default=True,
     )
+    apply_transform: BoolProperty(
+        name='Apply Transform',
+        description='Applies transform to work with UE4s "Transform Vertex to Absolute" import setting.',
+        default=False,
+    )
     export_type: EnumProperty(name="Type", items=constants.EXPORT_TYPES, default=constants.STATIC_MESH_TYPE)
     filename: StringProperty()
     filter_glob: StringProperty(default="*.fbx;*.obj")
@@ -41,6 +46,9 @@ class EmbarkNewExportCollection(Operator):
         self.layout.prop(self, constants.PROP_EXPORT_TYPE, expand=True)
         self.layout.label(text=f"Exports in {get_export_extension(self.export_type)} format")
         self.layout.prop(self, "export_immediately")
+
+        if get_export_extension(self.export_type) == 'FBX':
+            self.layout.prop(self, "apply_transform")
 
     def execute(self, context):
         """Creates a new Export Collection from the selection, optionally exporting it if requested."""
@@ -54,7 +62,8 @@ class EmbarkNewExportCollection(Operator):
                 objects.remove(active_object)
             objects.insert(0, active_object)
 
-        collection = create_export_collection(export_name, self.directory, self.export_type, objects)
+        collection = create_export_collection(export_name, self.directory,
+                                              self.export_type, self.apply_transform, objects)
         if self.export_immediately:
             if collection.export() == {'FINISHED'}:
                 self.report({'INFO'}, f"Successfully created & exported '{collection.name}'")
@@ -68,11 +77,10 @@ class EmbarkNewExportCollection(Operator):
         """Invokes a file browser with this Operator's properties."""
         if not check_path(self):
             return {'CANCELLED'}
-        scene_name = path.splitext(path.basename(bpy.data.filepath))[0]
-        name_content = [scene_name]
         if bpy.context.active_object:
-            name_content.append(bpy.context.active_object.name)
-        export_name = "_".join(name_content)
+            export_name = bpy.context.active_object.name
+        else:
+            export_name = path.splitext(path.basename(bpy.data.filepath))[0]
         self.filename = get_export_filename(export_name, self.export_type)
         self.filter_glob = get_export_filter_glob()
         context.window_manager.fileselect_add(self)
