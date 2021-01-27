@@ -119,7 +119,7 @@ def export_fbx(filepath):
         apply_unit_scale=True,
         apply_scale_options='FBX_SCALE_NONE',
         bake_space_transform=True,
-        object_types={'EMPTY', 'MESH', 'OTHER'},
+        object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
         use_armature_deform_only=True,
         mesh_smooth_type='FACE',
         add_leaf_bones=False,
